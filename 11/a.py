@@ -142,6 +142,7 @@ class OpCode:
                 return 0 #Yeld
             self.write(1,input.read())
         elif (self.opCode == 4):
+            #print([self.ip, self.loadParameter(1), self.calculateMemoryAdress(1)])
             output.append(self.loadParameter(1))
         #jump-if-true
         elif (self.opCode == 5):
@@ -182,6 +183,7 @@ class PaintRobot:
         self.direction = 0 #0 up, 1 right, 2 down 3 left
         self.visited = dict()
         self.dirVectors = [(0,-1), (1,0), (0, 1), (-1, 0)]
+        self.positions = []
         
     def run(self):
         self.waitingForInput = False
@@ -209,6 +211,7 @@ class PaintRobot:
             if not(self.currentPosition in self.visited):
                 self.visited[self.currentPosition] = 0 #black
             self.output.append(self.visited[self.currentPosition])
+            self.positions.append(self.currentPosition)
         
         self.output.append(len(self.visited))
         
@@ -223,12 +226,17 @@ class PaintRobot:
         self.output.append(maxX)
         self.output.append(maxY)
         
-        img = Image.new('L', ((maxX+1-minX)*4, (maxY+1-minY)*4))
+        img = Image.new('RGB', ((maxX+1-minX)*8, (maxY+1-minY)*8))
         for k in self.visited.keys():
-            for i in range(4):
-                img.putpixel((int((k[0] - minX)*4 + (i%2)), int((k[1] - minY)*4 + (i/2))), 255 if self.visited[k] == 1 else 0)
+            for i in range(64):
+                img.putpixel((int((k[0] - minX)*8 + (i%8)), int((k[1] - minY)*8 + (i/8))), (255,255,255) if self.visited[k] == 1 else 0)
             #draw = ImageDraw.Draw(img)
             #draw.ellipse((px-2, py-2, px+2, py+2), fill = 'white', outline ='white')
+        last = (0,0)
+        draw = ImageDraw.Draw(img)
+        for k in self.positions:
+            draw.line([((last[0] - minX)*8 + 4, (last[1] - minY)*8+4), ((k[0] - minX)*8+4, (k[1] - minY)*8+4)], fill = 'red', width = 2)
+            last = k
         img.save('malovanie2.png')
         
         self.finished = True
